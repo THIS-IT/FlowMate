@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest --run --coverage",
-    "preinstall": "node scripts/check-node.js"
+    "preinstall": "node scripts/check-node.js",
+    "clean:modules": "node -e \"require('fs').rmSync('node_modules',{recursive:true,force:true});\"",
+    "clean:cache": "npm cache clean --force",
+    "clean": "npm run clean:modules && npm run clean:cache",
+    "reinstall": "npm run clean:modules && npm cache clean --force && npm install"
   },
   "dependencies": {
     "next": "16.0.6",
