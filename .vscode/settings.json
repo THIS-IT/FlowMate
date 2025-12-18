@@ -1,0 +1,8 @@
+{
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/node_modules/**": true
+  },
+  "git.autorefresh": true,
+  "files.useExperimentalFileWatcher": true
+}

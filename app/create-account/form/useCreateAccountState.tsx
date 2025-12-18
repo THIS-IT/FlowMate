@@ -18,7 +18,7 @@ export type FormPayload = {
 
 const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
-export function useCreateAccountForm() {
+export function useCreateAccountState() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("PM");

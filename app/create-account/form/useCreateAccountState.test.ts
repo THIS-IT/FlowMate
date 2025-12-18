@@ -1,7 +1,7 @@
 import type React from "react";
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { useCreateAccountForm } from "./useCreateAccountForm";
+import { useCreateAccountState } from "./useCreateAccountState";
 
 const createFormEvent = (form?: HTMLFormElement) =>
   ({
@@ -9,9 +9,9 @@ const createFormEvent = (form?: HTMLFormElement) =>
     currentTarget: form ?? document.createElement("form"),
   } as unknown as React.FormEvent<HTMLFormElement>);
 
-describe("useCreateAccountForm", () => {
+describe("useCreateAccountState", () => {
   it("initializes with default values", () => {
-    const { result } = renderHook(() => useCreateAccountForm());
+    const { result } = renderHook(() => useCreateAccountState());
     expect(result.current.state.role).toBe("PM");
     expect(result.current.state.email).toBe("");
     expect(result.current.state.visibility).toEqual([]);
@@ -19,7 +19,7 @@ describe("useCreateAccountForm", () => {
   });
 
   it("validates email in realtime", () => {
-    const { result } = renderHook(() => useCreateAccountForm());
+    const { result } = renderHook(() => useCreateAccountState());
     act(() => result.current.actions.handleEmailChange("not-an-email"));
     expect(result.current.state.errors.email).toBe("Please enter a valid email.");
 
@@ -28,7 +28,7 @@ describe("useCreateAccountForm", () => {
   });
 
   it("validates password and confirm password in realtime", () => {
-    const { result } = renderHook(() => useCreateAccountForm());
+    const { result } = renderHook(() => useCreateAccountState());
 
     act(() => result.current.actions.handlePasswordChange("123"));
     expect(result.current.state.errors.password).toBe("Password must be at least 6 characters.");
@@ -48,7 +48,7 @@ describe("useCreateAccountForm", () => {
   });
 
   it("requires visibility when role is Other and returns payload on valid submit", () => {
-    const { result } = renderHook(() => useCreateAccountForm());
+    const { result } = renderHook(() => useCreateAccountState());
 
     act(() => {
       result.current.actions.setName("Jane Doe");

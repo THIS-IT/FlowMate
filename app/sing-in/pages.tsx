@@ -1,6 +1,21 @@
+"use client";
 import Link from "next/link";
+import { useSingInState } from "./form/useSingInState";
 
 export default function SingIn() {
+    const {
+        state: {
+            email,
+            password,
+            showPassword,
+            errors
+        },
+        actions: {
+            handlePasswordChange,
+            toggleShowPassword,
+            handleEmailChange
+        }
+    } = useSingInState();
     return (
         <div className="min-h-screen bg-slate-100 text-slate-800">
             <div className="flex min-h-screen items-center justify-center px-4">
@@ -29,8 +44,16 @@ export default function SingIn() {
                                 id="email"
                                 type="email"
                                 placeholder="you@company.com"
-                                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                                name="email"
+                                value={email}
+                                onChange={(e) => handleEmailChange(e.target.value)}
+                                className={`w-full rounded-lg border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:ring-2 ${errors.email
+                                    ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
+                                    : "border-slate-200 focus:border-slate-400 focus:ring-slate-200"
+                                    }`}
+                                aria-invalid={Boolean(errors.email)}
                             />
+                            {errors.email && <p className="text-xs text-rose-600">{errors.email}</p>}
                         </div>
 
                         <div className="space-y-2">
@@ -48,12 +71,28 @@ export default function SingIn() {
                                     Forgot password?
                                 </button>
                             </div>
-                            <input
-                                id="password"
-                                type="password"
-                                placeholder="••••••••"
-                                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-                            />
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => handlePasswordChange(e.target.value)}
+                                    className={`w-full rounded-lg border bg-white px-4 py-3 pr-16 text-sm text-slate-900 outline-none transition focus:ring-2 ${errors.password
+                                        ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
+                                        : "border-slate-200 focus:border-slate-400 focus:ring-slate-200"
+                                        }`}
+                                    aria-invalid={Boolean(errors.password)}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={toggleShowPassword}
+                                    className="absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-slate-500 cursor-pointer"
+                                >
+                                    {showPassword ? "Hide" : "Show"}
+                                </button>
+                            </div>
+                            {errors.password && <p className="text-xs text-rose-600">{errors.password}</p>}
                         </div>
 
                         <div className="flex items-center justify-between text-sm text-slate-600">

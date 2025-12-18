@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCreateAccountForm, type Role } from "./form/useCreateAccountForm";
+import { useCreateAccountState, type Role } from "./form/useCreateAccountState";
 
 export default function CreateAccount() {
   const {
@@ -30,7 +30,7 @@ export default function CreateAccount() {
       toggleShowPassword,
       toggleShowConfirmPassword,
     },
-  } = useCreateAccountForm();
+  } = useCreateAccountState();
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800">
@@ -71,11 +71,10 @@ export default function CreateAccount() {
                 name="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={`w-full rounded-lg border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:ring-2 ${
-                  errors.name
+                className={`w-full rounded-lg border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:ring-2 ${errors.name
                     ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
                     : "border-slate-200 focus:border-slate-400 focus:ring-slate-200"
-                }`}
+                  }`}
                 aria-invalid={Boolean(errors.name)}
               />
               {errors.name && <p className="text-xs text-rose-600">{errors.name}</p>}
@@ -95,11 +94,10 @@ export default function CreateAccount() {
                 name="email"
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                className={`w-full rounded-lg border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:ring-2 ${
-                  errors.email
+                className={`w-full rounded-lg border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:ring-2 ${errors.email
                     ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
                     : "border-slate-200 focus:border-slate-400 focus:ring-slate-200"
-                }`}
+                  }`}
                 aria-invalid={Boolean(errors.email)}
               />
               {errors.email && <p className="text-xs text-rose-600">{errors.email}</p>}
@@ -117,11 +115,10 @@ export default function CreateAccount() {
                   id="role"
                   name="role"
                   value={role}
-                  className={`w-full appearance-none rounded-lg border bg-white px-4 py-3 pr-10 text-sm text-slate-900 outline-none transition focus:ring-2 ${
-                    errors.role
+                  className={`w-full appearance-none rounded-lg border bg-white px-4 py-3 pr-10 text-sm text-slate-900 outline-none transition focus:ring-2 ${errors.role
                       ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
                       : "border-slate-200 focus:border-slate-400 focus:ring-slate-200"
-                  }`}
+                    }`}
                   onChange={(e) => handleRoleChange(e.target.value as Role)}
                   aria-invalid={Boolean(errors.role)}
                 >
@@ -153,11 +150,10 @@ export default function CreateAccount() {
             </div>
 
             <div
-              className={`space-y-2 overflow-hidden transition-all duration-500 ease-in-out ${
-                isOtherRole
+              className={`space-y-2 overflow-hidden transition-all duration-500 ease-in-out ${isOtherRole
                   ? "max-h-[260px] opacity-100 translate-y-0"
                   : "pointer-events-none max-h-0 opacity-0 -translate-y-2"
-              }`}
+                }`}
               aria-hidden={!isOtherRole}
               data-testid="visibility-section"
               data-visibility-section="true"
@@ -169,9 +165,8 @@ export default function CreateAccount() {
                 <span className="text-xs text-slate-500">Select what this role can see</span>
               </div>
               <div
-                className={`grid grid-cols-2 gap-2 rounded-lg border bg-white px-4 py-3 text-sm text-slate-800 ${
-                  errors.visibility ? "border-rose-300" : "border-slate-200"
-                }`}
+                className={`grid grid-cols-2 gap-2 rounded-lg border bg-white px-4 py-3 text-sm text-slate-800 ${errors.visibility ? "border-rose-300" : "border-slate-200"
+                  }`}
               >
                 {["PM", "SA", "DEV", "QA"].map((item) => (
                   <label key={item} className="flex items-center gap-2">
@@ -208,21 +203,20 @@ export default function CreateAccount() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
-                  className={`w-full rounded-lg border bg-white px-4 py-3 pr-16 text-sm text-slate-900 outline-none transition focus:ring-2 ${
-                    errors.password
+                  className={`w-full rounded-lg border bg-white px-4 py-3 pr-16 text-sm text-slate-900 outline-none transition focus:ring-2 ${errors.password
                       ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
                       : "border-slate-200 focus:border-slate-400 focus:ring-slate-200"
-                  }`}
+                    }`}
                   aria-invalid={Boolean(errors.password)}
                 />
-                  <button
-                    type="button"
-                    onClick={toggleShowPassword}
-                    className="absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-slate-500"
-                  >
-                    {showPassword ? "Hide" : "Show"}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={toggleShowPassword}
+                  className="absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-slate-500"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
               {errors.password && <p className="text-xs text-rose-600">{errors.password}</p>}
             </div>
 
@@ -240,32 +234,30 @@ export default function CreateAccount() {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                  className={`w-full rounded-lg border bg-white px-4 py-3 pr-16 text-sm text-slate-900 outline-none transition focus:ring-2 ${
-                    errors.confirmPassword
+                  className={`w-full rounded-lg border bg-white px-4 py-3 pr-16 text-sm text-slate-900 outline-none transition focus:ring-2 ${errors.confirmPassword
                       ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
                       : "border-slate-200 focus:border-slate-400 focus:ring-slate-200"
-                  }`}
+                    }`}
                   aria-invalid={Boolean(errors.confirmPassword)}
                 />
-                  <button
-                    type="button"
-                    onClick={toggleShowConfirmPassword}
-                    className="absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-slate-500"
-                  >
-                    {showConfirmPassword ? "Hide" : "Show"}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={toggleShowConfirmPassword}
+                  className="absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-slate-500"
+                >
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </button>
+              </div>
               {errors.confirmPassword ? (
                 <p className="text-xs text-rose-600">{errors.confirmPassword}</p>
               ) : (
                 <p
-                  className={`text-xs ${
-                    passwordsMatch
+                  className={`text-xs ${passwordsMatch
                       ? "text-emerald-600"
                       : password || confirmPassword
                         ? "text-amber-600"
                         : "text-slate-500"
-                  }`}
+                    }`}
                 >
                   {passwordsMatch
                     ? "Passwords match."
