@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function HomeIndex() {
+export default function SingIn() {
     return (
         <div className="min-h-screen bg-slate-100 text-slate-800">
             <div className="flex min-h-screen items-center justify-center px-4">
