@@ -1,6 +1,6 @@
 import HomeIndex from "./home-index/pages";
 
-export default function Home() {
+export default function Index() {
   return <HomeIndex />
 
 }
