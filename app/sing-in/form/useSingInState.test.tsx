@@ -10,6 +10,7 @@ describe("useSingInState", () => {
     expect(result.current.state.password).toBe("");
     expect(result.current.state.showPassword).toBe(false);
     expect(result.current.state.errors).toEqual({});
+    expect(result.current.state.isSignInDisabled).toBe(true);
   });
 
   it("validates email in realtime", () => {
@@ -43,5 +44,26 @@ describe("useSingInState", () => {
     expect(result.current.state.showPassword).toBe(true);
     act(() => result.current.actions.toggleShowPassword());
     expect(result.current.state.showPassword).toBe(false);
+  });
+
+  it("enables sign in only when both fields are filled", () => {
+    const { result } = renderHook(() => useSingInState());
+
+    expect(result.current.state.isSignInDisabled).toBe(true);
+
+    act(() => result.current.actions.handleEmailChange("user@example.com"));
+    act(() => result.current.actions.handlePasswordChange("123456"));
+
+    expect(result.current.state.isSignInDisabled).toBe(false);
+  });
+
+  it("stays disabled when validation errors exist", () => {
+    const { result } = renderHook(() => useSingInState());
+
+    act(() => result.current.actions.handleEmailChange("bad-email"));
+    act(() => result.current.actions.handlePasswordChange("123456"));
+
+    expect(result.current.state.errors.email).toBeDefined();
+    expect(result.current.state.isSignInDisabled).toBe(true);
   });
 });

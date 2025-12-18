@@ -3,6 +3,5 @@
     "**/.git/objects/**": true,
     "**/node_modules/**": true
   },
-  "git.autorefresh": true,
-  "files.useExperimentalFileWatcher": true
+  "git.autofetch": true
 }

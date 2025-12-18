@@ -43,12 +43,15 @@ export function useSingInState() {
     };
 
     const toggleShowPassword = () => setShowPassword((prev) => !prev);
+    const hasValidationErrors = Object.keys(errors).length > 0;
+    const isSignInDisabled = !email || !password || hasValidationErrors;
     return {
         state: {
             email,
             password,
             showPassword,
-            errors
+            errors,
+            isSignInDisabled
         },
         actions: {
             handlePasswordChange,

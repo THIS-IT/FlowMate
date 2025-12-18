@@ -8,7 +8,8 @@ export default function SingIn() {
             email,
             password,
             showPassword,
-            errors
+            errors,
+            isSignInDisabled
         },
         actions: {
             handlePasswordChange,
@@ -108,7 +109,11 @@ export default function SingIn() {
 
                         <button
                             type="submit"
-                            className="flex w-full items-center justify-center rounded-lg bg-sky-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-700"
+                            disabled={isSignInDisabled}
+                            className={`flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold text-white transition ${isSignInDisabled
+                                ? "bg-slate-300 cursor-not-allowed"
+                                : "bg-sky-600 hover:bg-sky-700"
+                                }`}
                         >
                             Sign in
                         </button>
