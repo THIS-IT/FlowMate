@@ -1,6 +1,5 @@
-import SingIn from "./sing-in/pages";
+import SignIn from "./sign-in/page";
 
 export default function Index() {
-  return <SingIn />
-
+  return <SignIn />;
 }

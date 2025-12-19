@@ -144,7 +144,7 @@ export default function CreateAccount() {
                 </div>
               </div>
               <p className="text-xs text-slate-500">
-                Choose “Other” for special roles and set visibility below.
+                Choose "Other" for special roles and set visibility below.
               </p>
               {errors.role && <p className="text-xs text-rose-600">{errors.role}</p>}
             </div>
@@ -200,7 +200,7 @@ export default function CreateAccount() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="Create a password"
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
                   className={`w-full rounded-lg border bg-white px-4 py-3 pr-16 text-sm text-slate-900 outline-none transition focus:ring-2 ${errors.password
@@ -231,7 +231,7 @@ export default function CreateAccount() {
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                   className={`w-full rounded-lg border bg-white px-4 py-3 pr-16 text-sm text-slate-900 outline-none transition focus:ring-2 ${errors.confirmPassword
