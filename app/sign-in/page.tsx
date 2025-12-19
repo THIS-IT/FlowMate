@@ -1,17 +1,23 @@
 "use client";
 import Link from "next/link";
+import { type FormEvent } from "react";
+import { LoadingOverlay } from "../components/LoadingOverlay";
 import { useSignInState } from "./form/useSignInState";
 
 export default function SignIn() {
   const {
-    state: { email, password, showPassword, errors, isSignInDisabled },
-    actions: { handlePasswordChange, toggleShowPassword, handleEmailChange, handleSubmit },
+    state: { email, password, showPassword, errors, isSignInDisabled, isSubmitting },
+    actions: { handlePasswordChange, toggleShowPassword, handleEmailChange, handleSubmitWithRedirect },
   } = useSignInState();
+
+  const onSubmit = (e: FormEvent<HTMLFormElement>) =>
+    handleSubmitWithRedirect(e, { redirectTo: "/create-account" });
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800">
+      <LoadingOverlay show={isSubmitting} label="Signing you in..." />
       <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-2xl bg-white px-8 py-10 shadow-[0_8px_40px_rgba(15,23,42,0.08)]">
+        <div className="fade-in-card w-full max-w-md rounded-2xl bg-white px-8 py-10 shadow-[0_8px_40px_rgba(15,23,42,0.08)]">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700">
               FR
@@ -22,12 +28,8 @@ export default function SignIn() {
 
           <form
             className="space-y-5"
-            onSubmit={(e) =>
-              handleSubmit(e, (payload) => {
-                // hook up auth request here
-                console.log("ready to sign in", payload);
-              })
-            }
+            onSubmit={onSubmit}
+            aria-busy={isSubmitting}
           >
             <div className="space-y-2">
               <label className="block text-sm font-medium text-slate-700" htmlFor="email">
@@ -55,12 +57,12 @@ export default function SignIn() {
                 <label className="block text-sm font-medium text-slate-700" htmlFor="password">
                   Password
                 </label>
-                <button
-                  type="button"
+                <Link
+                  href="/forgot-password"
                   className="text-sm font-semibold text-sky-600 hover:text-sky-700"
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
               <div className="relative">
                 <input
@@ -100,7 +102,7 @@ export default function SignIn() {
 
             <button
               type="submit"
-              disabled={isSignInDisabled}
+              disabled={isSignInDisabled || isSubmitting}
               className={`flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold text-white transition ${
                 isSignInDisabled ? "bg-slate-300 cursor-not-allowed" : "bg-sky-600 hover:bg-sky-700"
               }`}

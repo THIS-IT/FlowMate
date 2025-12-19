@@ -3,6 +3,12 @@ import { renderHook, act } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useSignInState } from "./useSignInState";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+}));
+
 const createFormEvent = (form?: HTMLFormElement) =>
   ({
     preventDefault: vi.fn(),

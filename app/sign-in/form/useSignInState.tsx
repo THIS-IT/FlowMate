@@ -1,16 +1,20 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 type SignInErrors = Partial<Record<"email" | "password", string>>;
-type SignInPayload = { email: string; password: string };
+export type SignInPayload = { email: string; password: string };
 
 const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
 export function useSignInState() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<SignInErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const defaultRedirectPath = "/create-account";
 
   const setFieldError = (key: keyof SignInErrors, message?: string) => {
     setErrors((prev) => {
@@ -77,8 +81,36 @@ export function useSignInState() {
   };
 
   const toggleShowPassword = () => setShowPassword((prev) => !prev);
+
+  const handleSubmitWithRedirect = async (
+    e: FormEvent<HTMLFormElement>,
+    options?: { redirectTo?: string; delayMs?: number; onValid?: (payload: SignInPayload) => void },
+  ) => {
+    setIsSubmitting(true);
+    const result = handleSubmit(e, options?.onValid);
+    if (!result.valid) {
+      setIsSubmitting(false);
+      return result;
+    }
+
+    try {
+      const delayMs = options?.delayMs ?? 900;
+      if (delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+      const redirectTo = options?.redirectTo ?? defaultRedirectPath;
+      if (redirectTo) {
+        router.push(redirectTo);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    return result;
+  };
+
   const hasValidationErrors = Object.keys(errors).length > 0;
-  const isSignInDisabled = !email.trim() || !password || hasValidationErrors;
+  const isSignInDisabled = isSubmitting || !email.trim() || !password || hasValidationErrors;
 
   return {
     state: {
@@ -87,12 +119,14 @@ export function useSignInState() {
       showPassword,
       errors,
       isSignInDisabled,
+      isSubmitting,
     },
     actions: {
       handlePasswordChange,
       toggleShowPassword,
       handleEmailChange,
       handleSubmit,
+      handleSubmitWithRedirect,
     },
   };
 }

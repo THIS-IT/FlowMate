@@ -122,10 +122,10 @@ export default function CreateAccount() {
                   onChange={(e) => handleRoleChange(e.target.value as Role)}
                   aria-invalid={Boolean(errors.role)}
                 >
-                  <option value="PM">PM</option>
-                  <option value="SA">SA</option>
-                  <option value="DEV">Dev</option>
-                  <option value="QA">QA</option>
+                  <option value="PM">Project Manager</option>
+                  <option value="SA">System Analyst</option>
+                  <option value="DEV">Developer</option>
+                  <option value="QA">Quality Assurance</option>
                   <option value="OTHER">Other (custom)</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500">
@@ -168,7 +168,7 @@ export default function CreateAccount() {
                 className={`grid grid-cols-2 gap-2 rounded-lg border bg-white px-4 py-3 text-sm text-slate-800 ${errors.visibility ? "border-rose-300" : "border-slate-200"
                   }`}
               >
-                {["PM", "SA", "DEV", "QA"].map((item) => (
+                {["Project Manager", "System Analyst", "Developer", "Quality Assurance"].map((item) => (
                   <label key={item} className="flex items-center gap-2">
                     <input
                       type="checkbox"
