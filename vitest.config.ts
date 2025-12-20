@@ -10,9 +10,11 @@ export default defineConfig({
       enabled: process.env.COVERAGE === "true",
       provider: "v8",
       reportsDirectory: "./coverage",
-      include: ["app/**/*.ts"],
+      include: ["app/**/*.{ts,tsx}"],
       exclude: [
-        "app/**/*.tsx",  
+        "app/**/page.tsx",
+        "app/**/layout.tsx",
+        "**/*.{test,spec}.{ts,tsx}",
         "**/*.d.ts",
         "vitest.setup.ts",
         "vitest.config.*",

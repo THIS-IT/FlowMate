@@ -8,9 +8,10 @@ import {
   signInSchemaValidate,
 } from "../schema/useSignInSchema";
 
+const pushMock = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: pushMock,
   }),
 }));
 
@@ -120,6 +121,170 @@ describe("useSignInState", () => {
 
     expect(result.current.state.errors.password).toBeUndefined();
     expect(onValid).toHaveBeenCalledWith({ email: "user@example.com", password: "123456" });
+  });
+
+  it("submits with redirect and optional delay", async () => {
+    vi.useFakeTimers();
+    pushMock.mockClear();
+
+    const form = document.createElement("form");
+    const emailInput = document.createElement("input");
+    emailInput.name = "email";
+    emailInput.value = "user@example.com";
+    const passwordInput = document.createElement("input");
+    passwordInput.name = "password";
+    passwordInput.value = "123456";
+    form.append(emailInput, passwordInput);
+
+    const { result } = renderHook(() => useSignInState());
+
+    await act(async () => {
+      const promise = result.current.actions.handleSubmitWithRedirect(createFormEvent(form), {
+        delayMs: 50,
+      });
+      await vi.advanceTimersByTimeAsync(50);
+      await promise;
+    });
+
+    expect(pushMock).toHaveBeenCalledWith("/create-account");
+    expect(result.current.state.isSubmitting).toBe(false);
+
+    vi.useRealTimers();
+  });
+
+  it("uses custom redirect when provided", async () => {
+    pushMock.mockClear();
+
+    const form = document.createElement("form");
+    const emailInput = document.createElement("input");
+    emailInput.name = "email";
+    emailInput.value = "user@example.com";
+    const passwordInput = document.createElement("input");
+    passwordInput.name = "password";
+    passwordInput.value = "123456";
+    form.append(emailInput, passwordInput);
+
+    const { result } = renderHook(() => useSignInState());
+
+    await act(async () => {
+      await result.current.actions.handleSubmitWithRedirect(createFormEvent(form), {
+        redirectTo: "/dashboard",
+      });
+    });
+
+    expect(pushMock).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("returns invalid result without redirect when validation fails", async () => {
+    pushMock.mockClear();
+
+    const form = document.createElement("form");
+    const emailInput = document.createElement("input");
+    emailInput.name = "email";
+    emailInput.value = "bad-email";
+    const passwordInput = document.createElement("input");
+    passwordInput.name = "password";
+    passwordInput.value = "123";
+    form.append(emailInput, passwordInput);
+
+    const { result } = renderHook(() => useSignInState());
+
+    let submitResult:
+      | Awaited<ReturnType<typeof result.current.actions.handleSubmitWithRedirect>>
+      | undefined;
+    await act(async () => {
+      submitResult = await result.current.actions.handleSubmitWithRedirect(createFormEvent(form));
+    });
+
+    expect(submitResult?.valid).toBe(false);
+    expect(result.current.state.errors.email).toBeDefined();
+    expect(pushMock).toHaveBeenCalledTimes(0);
+  });
+
+  it("reads and trims email from form data when state is empty", () => {
+    pushMock.mockClear();
+
+    const form = document.createElement("form");
+    const emailInput = document.createElement("input");
+    emailInput.name = "email";
+    emailInput.value = "   user@example.com  ";
+    const passwordInput = document.createElement("input");
+    passwordInput.name = "password";
+    passwordInput.value = "123456";
+    form.append(emailInput, passwordInput);
+
+    const onValid = vi.fn();
+    const { result } = renderHook(() => useSignInState());
+
+    act(() => {
+      result.current.actions.handleSubmit(createFormEvent(form), onValid);
+    });
+
+    expect(onValid).toHaveBeenCalledWith({ email: "user@example.com", password: "123456" });
+    expect(result.current.state.email).toBe("user@example.com");
+    expect(result.current.state.password).toBe("123456");
+  });
+
+  it("falls back to state values when form fields are missing", () => {
+    const form = document.createElement("form"); // no inputs -> triggers ?? email/password path
+    const { result } = renderHook(() => useSignInState());
+
+    act(() => {
+      result.current.actions.handleEmailChange("   state@example.com  ");
+      result.current.actions.handlePasswordChange("state-pass");
+    });
+
+    const onValid = vi.fn();
+    act(() => {
+      result.current.actions.handleSubmit(createFormEvent(form), onValid);
+    });
+
+    expect(onValid).toHaveBeenCalledWith({
+      email: "state@example.com", // trimmed from state value via ?? path
+      password: "state-pass",
+    });
+    expect(result.current.state.errors.email).toBeUndefined();
+    expect(result.current.state.errors.password).toBeUndefined();
+  });
+
+  it("short-circuits when already submitting", async () => {
+    pushMock.mockClear();
+
+    const form = document.createElement("form");
+    const emailInput = document.createElement("input");
+    emailInput.name = "email";
+    emailInput.value = "user@example.com";
+    const passwordInput = document.createElement("input");
+    passwordInput.name = "password";
+    passwordInput.value = "123456";
+    form.append(emailInput, passwordInput);
+
+    const { result } = renderHook(() => useSignInState());
+
+    vi.useFakeTimers();
+    let firstPromise: Promise<unknown> | undefined;
+    await act(async () => {
+      firstPromise = result.current.actions.handleSubmitWithRedirect(createFormEvent(form), {
+        delayMs: 50,
+      });
+      await Promise.resolve();
+    });
+
+    expect(result.current.state.isSubmitting).toBe(true);
+
+    type SubmitResult = Awaited<ReturnType<typeof result.current.actions.handleSubmitWithRedirect>>;
+    let secondResult: SubmitResult | undefined;
+    await act(async () => {
+      secondResult = await result.current.actions.handleSubmitWithRedirect(createFormEvent(form));
+    });
+    expect(secondResult?.valid).toBe(false);
+    expect(pushMock).toHaveBeenCalledTimes(0);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(50);
+      await firstPromise;
+    });
+    vi.useRealTimers();
   });
 });
 

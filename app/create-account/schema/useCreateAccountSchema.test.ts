@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ZodError } from "zod";
 import {
   useCreateAccountValidate,
   validateCreateAccountField,
@@ -67,5 +68,16 @@ describe("useCreateAccountSchema", () => {
     if (valid.success) {
       expect(valid.data.visibility).toEqual(["PM"]);
     }
+  });
+
+  it("ignores non-string issue paths when extracting errors", () => {
+    const error = new ZodError<CreateAccountPayload>([
+      { code: "custom", path: [0], message: "index issue" },
+      { code: "custom", path: ["email"], message: "Email is required." },
+    ]);
+
+    const errors = extractCreateAccountErrors(error);
+    expect(errors.email).toBe("Email is required.");
+    expect(errors).not.toHaveProperty("0");
   });
 });

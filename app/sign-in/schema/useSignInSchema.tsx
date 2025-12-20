@@ -19,6 +19,8 @@ const createAccountKeys = new Set<keyof SignInPayload>(
 export const extractSignInErrors = (error: z.ZodError<SignInPayload>): SignInErrors => {
     const next: SignInErrors = {};
     for (const issue of error.issues) {
+        const k = issue.path[0];
+        if (typeof k !== "string") continue;
         const key = issue.path[0] as keyof SignInPayload;
         if (createAccountKeys.has(key) && !next[key]) {
             next[key] = issue.message;

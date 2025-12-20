@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ZodError } from "zod";
 import {
   signInSchemaValidate,
   validateSignInField,
@@ -32,6 +33,17 @@ describe("useSignInSchema", () => {
       expect(errors.email).toBe("Email is required.");
       expect(errors.password).toBe("Password must be at least 6 characters.");
     }
+  });
+
+  it("ignores non-string issue paths when extracting errors", () => {
+    const error = new ZodError<SignInPayload>([
+      { code: "custom", path: [0], message: "index issue" },
+      { code: "custom", path: ["email"], message: "Email is required." },
+    ]);
+
+    const errors = extractSignInErrors(error);
+    expect(errors.email).toBe("Email is required.");
+    expect(errors).not.toHaveProperty("0");
   });
 
   it("returns field-level errors from helper", () => {

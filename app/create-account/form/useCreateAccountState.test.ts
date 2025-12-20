@@ -58,6 +58,36 @@ describe("useCreateAccountState", () => {
     expect(result.current.state.errors.confirmPassword).toBeUndefined();
   });
 
+  it("re-evaluates confirm password when password changes and confirm is short", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+
+    act(() => result.current.actions.handleConfirmPasswordChange("123"));
+    expect(result.current.state.errors.confirmPassword).toBe(
+      "Please confirm with at least 6 characters.",
+    );
+
+    act(() => result.current.actions.handlePasswordChange("123"));
+    expect(result.current.state.errors.confirmPassword).toBe(
+      "Please confirm with at least 6 characters.",
+    );
+  });
+
+  it("re-evaluates confirm password when password changes and confirm exists but mismatches", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+
+    act(() => result.current.actions.handleConfirmPasswordChange("abcdef"));
+    act(() => result.current.actions.handlePasswordChange("123456"));
+    expect(result.current.state.errors.confirmPassword).toBe("Passwords do not match.");
+  });
+
+  it("clears confirm password error when password matches existing confirm", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+
+    act(() => result.current.actions.handleConfirmPasswordChange("abcdef"));
+    act(() => result.current.actions.handlePasswordChange("abcdef"));
+    expect(result.current.state.errors.confirmPassword).toBeUndefined();
+  });
+
   it("requires visibility when role is Other and returns payload on valid submit", () => {
     const { result } = renderHook(() => useCreateAccountState());
 
@@ -93,6 +123,128 @@ describe("useCreateAccountState", () => {
       visibility: ["PM"],
       password: "password123",
     });
+  });
+
+  it("reads name and email from form data when state values are empty", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+
+    const form = document.createElement("form");
+    const nameInput = document.createElement("input");
+    nameInput.name = "name";
+    nameInput.value = "  Jane From Form  ";
+    const emailInput = document.createElement("input");
+    emailInput.name = "email";
+    emailInput.value = "  form@example.com  ";
+    form.append(nameInput, emailInput);
+
+    act(() => {
+      result.current.actions.handlePasswordChange("password123");
+      result.current.actions.handleConfirmPasswordChange("password123");
+    });
+
+    const onValid = vi.fn();
+    act(() => {
+      result.current.actions.handleSubmit(createFormEvent(form), onValid);
+    });
+
+    expect(onValid).toHaveBeenCalledTimes(1);
+    expect(onValid.mock.calls[0][0]).toMatchObject({
+      name: "Jane From Form",
+      email: "form@example.com",
+      role: "PM",
+      visibility: [],
+      password: "password123",
+    });
+    expect(result.current.state.errors.name).toBeUndefined();
+    expect(result.current.state.errors.email).toBeUndefined();
+  });
+
+  it("adds confirm password mismatch error on submit", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+    const form = document.createElement("form");
+
+    act(() => {
+      result.current.actions.setName("Jane");
+      result.current.actions.handleEmailChange("jane@example.com");
+      result.current.actions.handlePasswordChange("password123");
+      result.current.actions.handleConfirmPasswordChange("password999");
+    });
+
+    act(() => {
+      result.current.actions.handleSubmit(createFormEvent(form));
+    });
+
+    expect(result.current.state.errors.confirmPassword).toBe("Passwords do not match.");
+    expect(result.current.state.submitMessage).toBe("");
+  });
+
+  it("clears visibility and related errors when changing back from OTHER role", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+
+    act(() => result.current.actions.handleRoleChange("OTHER"));
+    act(() => result.current.actions.toggleVisibility("PM"));
+    act(() =>
+      result.current.actions.handleSubmit(
+        createFormEvent(),
+        vi.fn(), // just to avoid undefined
+      ),
+    );
+    expect(result.current.state.errors.visibility).toBeUndefined();
+    expect(result.current.state.visibility).toEqual(["PM"]);
+
+    act(() => result.current.actions.handleRoleChange("PM"));
+    expect(result.current.state.visibility).toEqual([]);
+    expect(result.current.state.errors.visibility).toBeUndefined();
+  });
+
+  it("ignores visibility toggle when role is not OTHER", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+
+    act(() => result.current.actions.toggleVisibility("PM"));
+    expect(result.current.state.visibility).toEqual([]);
+  });
+
+  it("clears visibility error once a selection is made for OTHER role", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+
+    act(() => {
+      result.current.actions.setName("Jane Doe");
+      result.current.actions.handleEmailChange("jane@example.com");
+      result.current.actions.handlePasswordChange("password123");
+      result.current.actions.handleConfirmPasswordChange("password123");
+      result.current.actions.handleRoleChange("OTHER");
+    });
+
+    act(() => result.current.actions.handleSubmit(createFormEvent()));
+    expect(result.current.state.errors.visibility).toBeDefined();
+
+    act(() => result.current.actions.toggleVisibility("PM"));
+    expect(result.current.state.visibility).toEqual(["PM"]);
+    expect(result.current.state.errors.visibility).toBeUndefined();
+  });
+
+  it("removes visibility entry when toggled twice for OTHER role", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+
+    act(() => result.current.actions.handleRoleChange("OTHER"));
+    act(() => result.current.actions.toggleVisibility("PM"));
+    expect(result.current.state.visibility).toEqual(["PM"]);
+
+    act(() => result.current.actions.toggleVisibility("PM"));
+    expect(result.current.state.visibility).toEqual([]);
+  });
+
+  it("toggles password visibility flags", () => {
+    const { result } = renderHook(() => useCreateAccountState());
+
+    expect(result.current.state.showPassword).toBe(false);
+    expect(result.current.state.showConfirmPassword).toBe(false);
+
+    act(() => result.current.actions.toggleShowPassword());
+    act(() => result.current.actions.toggleShowConfirmPassword());
+
+    expect(result.current.state.showPassword).toBe(true);
+    expect(result.current.state.showConfirmPassword).toBe(true);
   });
 });
 
