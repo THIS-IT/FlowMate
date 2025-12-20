@@ -1,22 +1,16 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
+import {
+  type CreateAccountPayload,
+  type CreateAccountErrors,
+  validateCreateAccountField,
+  validateCreateAccountForm,
+} from "../schema/useCreateAccountSchema";
 
-export type Role = "PM" | "SA" | "DEV" | "QA" | "OTHER";
+export type Role = CreateAccountPayload["role"];
 
-export type FormErrors = Partial<
-  Record<"name" | "email" | "role" | "password" | "confirmPassword" | "visibility", string>
->;
-
-export type FormPayload = {
-  name: string;
-  email: string;
-  role: Role;
-  visibility: string[];
-  password: string;
-};
-
-const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+export type FormErrors = CreateAccountErrors & { confirmPassword?: string };
 
 export function useCreateAccountState() {
   const [name, setName] = useState("");
@@ -58,22 +52,12 @@ export function useCreateAccountState() {
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
-    if (!value.trim()) {
-      setFieldError("email", "Email is required.");
-    } else if (!validateEmail(value)) {
-      setFieldError("email", "Please enter a valid email.");
-    } else {
-      setFieldError("email", undefined);
-    }
+    setFieldError("email", validateCreateAccountField("email", value));
   };
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
-    if (value.length < 6) {
-      setFieldError("password", "Password must be at least 6 characters.");
-    } else {
-      setFieldError("password", undefined);
-    }
+    setFieldError("password", validateCreateAccountField("password", value));
     // also re-evaluate confirm matching
     if (confirmPassword.length > 0) {
       if (value !== confirmPassword) {
@@ -112,54 +96,39 @@ export function useCreateAccountState() {
 
   const handleSubmit = (
     e: FormEvent<HTMLFormElement>,
-    onValid?: (payload: FormPayload) => void,
+    onValid?: (payload: CreateAccountPayload) => void,
   ) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const nameValue = (name || (formData.get("name") as string | null) || "").trim();
     const emailValue = (email || (formData.get("email") as string | null) || "").trim();
+    const payloadCandidate: CreateAccountPayload = {
+      name: nameValue,
+      email: emailValue,
+      role,
+      visibility,
+      password,
+    };
 
-    const nextErrors: FormErrors = {};
-    if (!nameValue) {
-      nextErrors.name = "Name is required.";
-    }
-    if (!emailValue) {
-      nextErrors.email = "Email is required.";
-    } else if (!validateEmail(emailValue)) {
-      nextErrors.email = "Please enter a valid email.";
-    }
-    if (!role) {
-      nextErrors.role = "Role is required.";
-    }
-    if (password.length < 6) {
-      nextErrors.password = "Password must be at least 6 characters.";
-    }
+    const validation = validateCreateAccountForm(payloadCandidate);
+    const nextErrors: FormErrors = validation.success ? {} : { ...validation.errors };
+
     if (confirmPassword.length < 6) {
       nextErrors.confirmPassword = "Please confirm with at least 6 characters.";
     } else if (password !== confirmPassword) {
       nextErrors.confirmPassword = "Passwords do not match.";
     }
-    if (isOtherRole && visibility.length === 0) {
-      nextErrors.visibility = "Select at least one role to grant visibility.";
-    }
 
     setErrors(nextErrors);
 
-    if (Object.keys(nextErrors).length === 0) {
-      const payload: FormPayload = {
-        name: nameValue,
-        email: emailValue,
-        role,
-        visibility,
-        password,
-      };
+    if (validation.success && !nextErrors.confirmPassword) {
       setSubmitMessage("All set! Ready to create the account.");
-      onValid?.(payload);
-      return { valid: true, payload };
-    } else {
-      setSubmitMessage("");
-      return { valid: false as const, payload: undefined };
+      onValid?.(validation.data);
+      return { valid: true, payload: validation.data };
     }
+
+    setSubmitMessage("");
+    return { valid: false as const, payload: undefined };
   };
 
   const toggleShowPassword = () => setShowPassword((prev) => !prev);
