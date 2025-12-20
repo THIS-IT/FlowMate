@@ -2,6 +2,11 @@ import type React from "react";
 import { renderHook, act } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useSignInState } from "./useSignInState";
+import {
+  validateSignInField,
+  validateSignInForm,
+  signInSchemaValidate,
+} from "../schema/useSignInSchema";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -37,6 +42,14 @@ describe("useSignInState", () => {
 
     act(() => result.current.actions.handleEmailChange("user@example.com"));
     expect(result.current.state.errors.email).toBeUndefined();
+  });
+
+  it("trims leading whitespace when validating email", () => {
+    const { result } = renderHook(() => useSignInState());
+
+    act(() => result.current.actions.handleEmailChange("   user@example.com"));
+    expect(result.current.state.errors.email).toBeUndefined();
+    expect(result.current.state.email).toBe("user@example.com");
   });
 
   it("validates password length", () => {
@@ -107,5 +120,34 @@ describe("useSignInState", () => {
 
     expect(result.current.state.errors.password).toBeUndefined();
     expect(onValid).toHaveBeenCalledWith({ email: "user@example.com", password: "123456" });
+  });
+});
+
+describe("sign-in schema helpers", () => {
+  it("returns field level errors", () => {
+    expect(validateSignInField("email", "")).toBe("Email is required.");
+    expect(validateSignInField("email", "not-an-email")).toBe("Please enter a valid email.");
+    expect(validateSignInField("password", "123")).toBe("Password must be at least 6 characters.");
+    expect(validateSignInField("password", "123456")).toBeUndefined();
+  });
+
+  it("validates a full payload and trims email", () => {
+    const result = validateSignInForm({
+      email: "   user@example.com ",
+      password: "123456",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toBe("user@example.com");
+    }
+  });
+
+  it("matches the schema definition", () => {
+    const parsed = signInSchemaValidate.safeParse({
+      email: "person@example.com",
+      password: "abcdef",
+    });
+    expect(parsed.success).toBe(true);
   });
 });

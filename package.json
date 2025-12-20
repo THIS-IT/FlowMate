@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest --run --coverage",
+    "test": "vitest --run",
+    "test:coverage": "cross-env COVERAGE=true vitest --run --coverage",
     "preinstall": "node scripts/check-node.js",
     "clean:modules": "node -e \"require('fs').rmSync('node_modules',{recursive:true,force:true});\"",
     "clean:cache": "npm cache clean --force",
@@ -17,7 +18,8 @@
   "dependencies": {
     "next": "16.0.10",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -32,6 +34,7 @@
     "jsdom": "^27.2.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "cross-env": "^7.0.3"
   }
 }

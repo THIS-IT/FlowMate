@@ -7,6 +7,7 @@ export default defineConfig({
     setupFiles: "./vitest.setup.ts",
     include: ["app/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
+      enabled: process.env.COVERAGE === "true",
       provider: "v8",
       reportsDirectory: "./coverage",
       include: ["app/**/*.ts"],
