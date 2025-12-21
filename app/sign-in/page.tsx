@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { type FormEvent } from "react";
-import { LoadingOverlay } from "../components/LoadingOverlay";
+import { LoadingOverlay } from "../components/loadingOverlay/LoadingOverlay";
 import { useSignInState } from "./form/useSignInState";
 
 export default function SignIn() {
